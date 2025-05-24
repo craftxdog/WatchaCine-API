@@ -76,6 +76,8 @@ builder.Services.AddCors(opciones =>
 builder.Services.AddTransient<IAlmacenadorArchivos, AlmacenadorArchivosAzure>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<IServicioUsuarios, ServicioUsuarios>();
+DotNetEnv.Env.Load();
+var azureConn = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
 
 var app = builder.Build();
 
