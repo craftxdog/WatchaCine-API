@@ -1,0 +1,7 @@
+﻿services:
+  peliculasapis:
+    image: peliculasapis
+    build:
+      context: .
+      dockerfile: PeliculasAPIs/Dockerfile
+
