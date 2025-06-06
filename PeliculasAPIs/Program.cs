@@ -62,7 +62,7 @@ builder.Services.AddOutputCache(opciones =>
     opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(60);
 });
 
-var origenesPermitidos = builder.Configuration.GetValue<string>("origenesPermitidos")!.Split(",");
+var origenesPermitidos = builder.Configuration.GetValue<string>("WhiteListOrigin")!.Split(",");
 
 builder.Services.AddCors(opciones =>
 {

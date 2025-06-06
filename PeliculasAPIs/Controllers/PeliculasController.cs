@@ -60,7 +60,7 @@ namespace PeliculasAPIs.Controllers
                 .Take(top)
                 .ProjectTo<PeliculaDTO>(mapper.ConfigurationProvider)
                 .ToListAsync();
-
+            
             var resultado = new LandingPageDTO();
             resultado.EnCines = enCines;
             resultado.ProximosEstrenos = proximosEstrenos;
@@ -160,25 +160,53 @@ namespace PeliculasAPIs.Controllers
             };
         }
 
+        // [HttpPost]
+        // public async Task<IActionResult> Post([FromForm] PeliculaCreacionDTO peliculaCreacionDTO)
+        // {
+        //     var pelicula = mapper.Map<Pelicula>(peliculaCreacionDTO);
+        //
+        //     if (peliculaCreacionDTO.Poster is not null)
+        //     {
+        //         var url = await almacenadorArchivos.Almacenar(contenedor, peliculaCreacionDTO.Poster);
+        //         pelicula.Poster = url;
+        //     }
+        //
+        //     AsignarOrdenActores(pelicula);
+        //     context.Add(pelicula);
+        //     await context.SaveChangesAsync();
+        //     await outputCacheStore.EvictByTagAsync(cacheTag, default);
+        //     var peliculaDTO = mapper.Map<PeliculaDTO>(pelicula);
+        //     return CreatedAtRoute("ObtenerPeliculaPorId", new { id = pelicula.Id }, peliculaDTO);
+        //
+        // }
+        
         [HttpPost]
         public async Task<IActionResult> Post([FromForm] PeliculaCreacionDTO peliculaCreacionDTO)
         {
-            var pelicula = mapper.Map<Pelicula>(peliculaCreacionDTO);
-
-            if (peliculaCreacionDTO.Poster is not null)
+            try
             {
-                var url = await almacenadorArchivos.Almacenar(contenedor, peliculaCreacionDTO.Poster);
-                pelicula.Poster = url;
+                var pelicula = mapper.Map<Pelicula>(peliculaCreacionDTO);
+
+                if (peliculaCreacionDTO.Poster is not null)
+                {
+                    var url = await almacenadorArchivos.Almacenar(contenedor, peliculaCreacionDTO.Poster);
+                    pelicula.Poster = url;
+                }
+
+                AsignarOrdenActores(pelicula);
+                context.Add(pelicula);
+                await context.SaveChangesAsync();
+                await outputCacheStore.EvictByTagAsync(cacheTag, default);
+                var peliculaDTO = mapper.Map<PeliculaDTO>(pelicula);
+                return CreatedAtRoute("ObtenerPeliculaPorId", new { id = pelicula.Id }, peliculaDTO);
             }
-
-            AsignarOrdenActores(pelicula);
-            context.Add(pelicula);
-            await context.SaveChangesAsync();
-            await outputCacheStore.EvictByTagAsync(cacheTag, default);
-            var peliculaDTO = mapper.Map<PeliculaDTO>(pelicula);
-            return CreatedAtRoute("ObtenerPeliculaPorId", new { id = pelicula.Id }, peliculaDTO);
-
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno: {ex.Message} \n\n {ex.StackTrace}");
+            }
         }
+
+        
 
         [HttpGet("PutGet/{id:int}")]
         public async Task<ActionResult<PeliculasPutGetDTO>> PutGet(int id)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace PeliculasAPI.Utilidades
 {
@@ -7,24 +8,22 @@ namespace PeliculasAPI.Utilidades
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            var nombrePropiedad = bindingContext.ModelName;
-            var valor = bindingContext.ValueProvider.GetValue(nombrePropiedad);
+            var modelName = bindingContext.ModelName;
+            var value = bindingContext.ValueProvider.GetValue(modelName).FirstValue;
 
-            if (valor == ValueProviderResult.None)
+            if (string.IsNullOrEmpty(value))
             {
+                bindingContext.Result = ModelBindingResult.Success(null);
                 return Task.CompletedTask;
             }
-
             try
             {
-                var tipoDestino = bindingContext.ModelMetadata.ModelType;
-                var valorDeserializado = JsonSerializer.Deserialize(valor.FirstValue!,
-                    tipoDestino, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                bindingContext.Result = ModelBindingResult.Success(valorDeserializado);
+                var result = JsonConvert.DeserializeObject(value, bindingContext.ModelType);
+                bindingContext.Result = ModelBindingResult.Success(result);
             }
-            catch
+            catch (Exception ex)
             {
-                bindingContext.ModelState.TryAddModelError(nombrePropiedad, "El valor dado no es del tipo adecuado");
+                bindingContext.ModelState.AddModelError(modelName, $"Error al deserializar: {ex.Message}");
             }
 
             return Task.CompletedTask;
